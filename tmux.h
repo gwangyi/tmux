@@ -1724,6 +1724,7 @@ void		tty_keys_free(struct tty *);
 key_code	tty_keys_next(struct tty *);
 
 /* arguments.c */
+void		 args_set(struct args *, u_char, const char *);
 struct args	*args_parse(const char *, int, char **);
 void		 args_free(struct args *);
 char		*args_print(struct args *);
@@ -2137,8 +2138,7 @@ void		 window_pane_key(struct window_pane *, struct client *,
 		     struct session *, key_code, struct mouse_event *);
 int		 window_pane_outside(struct window_pane *);
 int		 window_pane_visible(struct window_pane *);
-char		*window_pane_search(struct window_pane *, const char *,
-		     u_int *);
+u_int		 window_pane_search(struct window_pane *, const char *);
 const char	*window_printable_flags(struct winlink *);
 struct window_pane *window_pane_find_up(struct window_pane *);
 struct window_pane *window_pane_find_down(struct window_pane *);

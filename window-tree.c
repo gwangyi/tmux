@@ -16,11 +16,6 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// XXX XXX
-// TODO:
-// find-window
-// do we want to use send -X or not?
-
 #include <sys/types.h>
 
 #include <stdlib.h>
@@ -462,7 +457,10 @@ window_tree_init(struct window_pane *wp, struct cmd_find_state *fs,
 	data->wp = wp;
 	data->references = 1;
 
-	data->filter = NULL;
+	if (args_has(args, 'f'))
+		data->filter = xstrdup(args_get(args, 'f'));
+	else
+		data->filter = NULL;
 
 	if (args == NULL || args->argc == 0)
 		data->command = xstrdup(WINDOW_TREE_DEFAULT_COMMAND);
