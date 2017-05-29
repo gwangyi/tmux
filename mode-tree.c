@@ -444,9 +444,9 @@ mode_tree_draw(struct mode_tree_data *mtd)
 		else if (TAILQ_EMPTY(&mti->children))
 			symbol = "  ";
 		else if (mti->expanded)
-			symbol = "+ ";
-		else
 			symbol = "- ";
+		else
+			symbol = "+ ";
 
 		if (line->depth == 0)
 			start = xstrdup(symbol);
