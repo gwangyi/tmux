@@ -34,7 +34,7 @@ const struct cmd_entry cmd_find_window_entry = {
 	.name = "find-window",
 	.alias = "findw",
 
-	.args = { "CNt:T", 1, 4 },
+	.args = { "CNt:T", 1, 1 },
 	.usage = "[-CNT] " CMD_TARGET_PANE_USAGE " match-string",
 
 	.target = { 't', CMD_FIND_PANE, 0 },
@@ -49,7 +49,7 @@ cmd_find_window_exec(struct cmd *self, struct cmdq_item *item)
 	struct args		*args = self->args, *new_args;
 	struct window_pane	*wp = item->target.wp;
 	const char		*s = args->argv[0];
-	char			*filter, argv = { NULL };
+	char			*filter, *argv = { NULL };
 	int			 C, N, T;
 
 	C = args_has(args, 'C');
@@ -84,11 +84,13 @@ cmd_find_window_exec(struct cmd *self, struct cmdq_item *item)
 	else if (T)
 		xasprintf(&filter, "#{m:*%s*,#{pane_title}}", s);
 
-	new_args = args_parse("", 1, argv);
+	new_args = args_parse("", 1, &argv);
 	args_set(new_args, 'f', filter);
 
 	window_pane_set_mode(wp, &window_tree_mode, &item->target, new_args);
 
+	args_free(new_args);
 	free(filter);
+
 	return (CMD_RETURN_NORMAL);
 }
