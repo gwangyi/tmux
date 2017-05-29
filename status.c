@@ -677,9 +677,14 @@ status_prompt_set(struct client *c, const char *msg, const char *input,
 
 	ft = format_create(c, NULL, FORMAT_NONE, 0);
 	format_defaults(ft, c, NULL, NULL, NULL);
-
 	t = time(NULL);
-	tmp = format_expand_time(ft, input, t);
+
+	if (input == NULL)
+		input = "";
+	if (flags & PROMPT_NOFORMAT)
+		tmp = xstrdup(input);
+	else
+		tmp = format_expand_time(ft, input, t);
 
 	status_message_clear(c);
 	status_prompt_clear(c);

@@ -1382,6 +1382,7 @@ struct client {
 #define PROMPT_SINGLE 0x1
 #define PROMPT_NUMERIC 0x2
 #define PROMPT_INCREMENTAL 0x4
+#define PROMPT_NOFORMAT 0x8
 	int		 prompt_flags;
 
 	struct session	*session;
@@ -1521,6 +1522,7 @@ char		*paste_make_sample(struct paste_buffer *);
 #define FORMAT_PANE 0x80000000U
 #define FORMAT_WINDOW 0x40000000U
 struct format_tree;
+int		 format_true(const char *);
 struct format_tree *format_create(struct client *, struct cmdq_item *, int,
 		     int);
 void		 format_free(struct format_tree *);
@@ -2198,6 +2200,7 @@ void	 mode_tree_resize(struct mode_tree_data *, u_int, u_int);
 struct mode_tree_item *mode_tree_add(struct mode_tree_data *,
 	     struct mode_tree_item *, void *, uint64_t, const char *,
 	     const char *);
+void	 mode_tree_remove(struct mode_tree_data *, struct mode_tree_item *);
 void	 mode_tree_draw(struct mode_tree_data *);
 int	 mode_tree_key(struct mode_tree_data *, key_code *,
 	     struct mouse_event *);

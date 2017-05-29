@@ -856,7 +856,7 @@ format_choose(char *s, char **left, char **right)
 }
 
 /* Is this true? */
-static int
+int
 format_true(const char *s)
 {
 	if (s != NULL && *s != '\0' && (s[0] != '0' || s[1] != '\0'))

@@ -78,6 +78,8 @@ struct mode_tree_line {
 	int				 flat;
 };
 
+static void mode_tree_free_items(struct mode_tree_list *);
+
 static struct mode_tree_item *
 mode_tree_find_item(struct mode_tree_list *mtl, uint64_t tag)
 {
@@ -94,18 +96,24 @@ mode_tree_find_item(struct mode_tree_list *mtl, uint64_t tag)
 }
 
 static void
+mode_tree_free_item(struct mode_tree_item *mti)
+{
+	mode_tree_free_items(&mti->children);
+
+	free((void *)mti->name);
+	free((void *)mti->text);
+
+	free(mti);
+}
+
+static void
 mode_tree_free_items(struct mode_tree_list *mtl)
 {
 	struct mode_tree_item	*mti, *mti1;
 
 	TAILQ_FOREACH_SAFE(mti, mtl, entry, mti1) {
-		mode_tree_free_items(&mti->children);
-
-		free((void *)mti->name);
-		free((void *)mti->text);
-
 		TAILQ_REMOVE(mtl, mti, entry);
-		free(mti);
+		mode_tree_free_item(mti);
 	}
 }
 
@@ -362,6 +370,18 @@ mode_tree_add(struct mode_tree_data *mtd, struct mode_tree_item *parent,
 		TAILQ_INSERT_TAIL(&mtd->children, mti, entry);
 
 	return (mti);
+}
+
+void
+mode_tree_remove(struct mode_tree_data *mtd, struct mode_tree_item *mti)
+{
+	struct mode_tree_item	*parent = mti->parent;
+
+	if (parent != NULL)
+		TAILQ_REMOVE(&parent->children, mti, entry);
+	else
+		TAILQ_REMOVE(&mtd->children, mti, entry);
+	mode_tree_free_item(mti);
 }
 
 void
