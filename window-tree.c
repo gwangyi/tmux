@@ -19,10 +19,7 @@
 // XXX XXX
 // TODO:
 // find-window
-// man page
 // do we want to use send -X or not?
-// choose-tree flags to start with sessions, windows, panes, expanded
-//
 
 #include <sys/types.h>
 
@@ -31,7 +28,8 @@
 
 #include "tmux.h"
 
-static struct screen	*window_tree_init(struct window_pane *, struct args *);
+static struct screen	*window_tree_init(struct window_pane *,
+			     struct cmd_find_state *, struct args *);
 static void		 window_tree_free(struct window_pane *);
 static void		 window_tree_resize(struct window_pane *, u_int, u_int);
 static void		 window_tree_key(struct window_pane *,
@@ -59,6 +57,7 @@ static const char *window_tree_sort_list[] = {
 };
 
 enum window_tree_type {
+	WINDOW_TREE_NONE,
 	WINDOW_TREE_SESSION,
 	WINDOW_TREE_WINDOW,
 	WINDOW_TREE_PANE,
@@ -86,6 +85,9 @@ struct window_tree_modedata {
 	const char			 *entered;
 
 	char				 *filter;
+
+	struct cmd_find_state		  fs;
+	enum window_tree_type		  type;
 };
 
 static void
@@ -221,7 +223,7 @@ window_tree_build_pane(struct session *s, struct winlink *wl,
 	    NULL, s, wl, wp);
 	xasprintf(&name, "%u", idx);
 
-	mode_tree_add(data->data, parent, item, (uint64_t)wp, name, text);
+	mode_tree_add(data->data, parent, item, (uint64_t)wp, name, text, -1);
 	free(text);
 	free(name);
 }
@@ -236,6 +238,7 @@ window_tree_build_window(struct session *s, struct winlink *wl, void* modedata,
 	char				*name, *text, *cp;
 	struct window_pane		*wp, **l;
 	u_int				 n, i;
+	int				 expanded;
 
 	item = window_tree_add_item(data);
 	item->type = WINDOW_TREE_WINDOW;
@@ -248,7 +251,12 @@ window_tree_build_window(struct session *s, struct winlink *wl, void* modedata,
 	    NULL, s, wl, NULL);
 	xasprintf(&name, "%u", wl->idx);
 
-	mti = mode_tree_add(data->data, parent, item, (uint64_t)wl, name, text);
+	if (data->type == WINDOW_TREE_WINDOW)
+		expanded = 0;
+	else
+		expanded = 1;
+	mti = mode_tree_add(data->data, parent, item, (uint64_t)wl, name, text,
+	    expanded);
 	free(text);
 	free(name);
 
@@ -300,6 +308,7 @@ window_tree_build_session(struct session *s, void* modedata,
 	char				*text;
 	struct winlink			*wl, **l;
 	u_int				 n, i, empty;
+	int				 expanded;
 
 	item = window_tree_add_item(data);
 	item->type = WINDOW_TREE_SESSION;
@@ -314,7 +323,12 @@ window_tree_build_session(struct session *s, void* modedata,
 	    "#{?session_attached, (attached),}",
 	    NULL, s, NULL, NULL);
 
-	mti = mode_tree_add(data->data, NULL, item, (uint64_t)s, s->name, text);
+	if (data->type == WINDOW_TREE_SESSION)
+		expanded = 0;
+	else
+		expanded = 1;
+	mti = mode_tree_add(data->data, NULL, item, (uint64_t)s, s->name, text,
+	    expanded);
 	free(text);
 
 	l = NULL;
@@ -349,7 +363,7 @@ window_tree_build_session(struct session *s, void* modedata,
 }
 
 static void
-window_tree_build(void *modedata, u_int sort_type)
+window_tree_build(void *modedata, u_int sort_type, uint64_t *tag)
 {
 	struct window_tree_modedata	*data = modedata;
 	struct session			*s, **l;
@@ -388,6 +402,20 @@ restart:
 		no_filter = 1;
 		goto restart;
 	}
+
+	switch (data->type) {
+	case WINDOW_TREE_NONE:
+		break;
+	case WINDOW_TREE_SESSION:
+		*tag = (uint64_t)data->fs.s;
+		break;
+	case WINDOW_TREE_WINDOW:
+		*tag = (uint64_t)data->fs.wl;
+		break;
+	case WINDOW_TREE_PANE:
+		*tag = (uint64_t)data->fs.wp;
+		break;
+	}
 }
 
 static struct screen *
@@ -415,12 +443,21 @@ window_tree_draw(__unused void *modedata, void *itemdata, u_int sx, u_int sy)
 }
 
 static struct screen *
-window_tree_init(struct window_pane *wp, __unused struct args *args)
+window_tree_init(struct window_pane *wp, struct cmd_find_state *fs,
+    struct args *args)
 {
 	struct window_tree_modedata	*data;
 	struct screen			*s;
 
 	wp->modedata = data = xcalloc(1, sizeof *data);
+
+	if (args_has(args, 's'))
+		data->type = WINDOW_TREE_SESSION;
+	else if (args_has(args, 'w'))
+		data->type = WINDOW_TREE_WINDOW;
+	else
+		data->type = WINDOW_TREE_PANE;
+	memcpy(&data->fs, fs, sizeof data->fs);
 
 	data->wp = wp;
 	data->references = 1;
@@ -438,6 +475,8 @@ window_tree_init(struct window_pane *wp, __unused struct args *args)
 
 	mode_tree_build(data->data);
 	mode_tree_draw(data->data);
+
+	data->type = WINDOW_TREE_NONE;
 
 	return (s);
 }
@@ -495,6 +534,8 @@ window_tree_get_target(struct window_tree_itemdata *item,
 
 	target = NULL;
 	switch (item->type) {
+	case WINDOW_TREE_NONE:
+		break;
 	case WINDOW_TREE_SESSION:
 		if (s == NULL)
 			break;

@@ -30,33 +30,7 @@ const struct cmd_entry cmd_choose_tree_entry = {
 	.name = "choose-tree",
 	.alias = NULL,
 
-	.args = { "t:", 0, 1 },
-	.usage = CMD_TARGET_PANE_USAGE,
-
-	.target = { 't', CMD_FIND_PANE, 0 },
-
-	.flags = 0,
-	.exec = cmd_choose_tree_exec
-};
-
-const struct cmd_entry cmd_choose_session_entry = {
-	.name = "choose-session",
-	.alias = NULL,
-
-	.args = { "t:", 0, 1 },
-	.usage = CMD_TARGET_PANE_USAGE,
-
-	.target = { 't', CMD_FIND_PANE, 0 },
-
-	.flags = 0,
-	.exec = cmd_choose_tree_exec
-};
-
-const struct cmd_entry cmd_choose_window_entry = {
-	.name = "choose-window",
-	.alias = NULL,
-
-	.args = { "t:", 0, 1 },
+	.args = { "st:w", 0, 1 },
 	.usage = CMD_TARGET_PANE_USAGE,
 
 	.target = { 't', CMD_FIND_PANE, 0 },
@@ -71,7 +45,7 @@ cmd_choose_tree_exec(struct cmd *self, struct cmdq_item *item)
 	struct args		*args = self->args;
 	struct window_pane	*wp = item->target.wp;
 
-	window_pane_set_mode(wp, &window_tree_mode, args);
+	window_pane_set_mode(wp, &window_tree_mode, &item->target, args);
 
 	return (CMD_RETURN_NORMAL);
 }

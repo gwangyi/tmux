@@ -46,7 +46,9 @@ cmd_choose_buffer_exec(struct cmd *self, struct cmdq_item *item)
 	struct args		*args = self->args;
 	struct window_pane	*wp = item->target.wp;
 
-	if (paste_get_top(NULL) != NULL)
-		window_pane_set_mode(wp, &window_buffer_mode, args);
+	if (paste_get_top(NULL) == NULL)
+		return (CMD_RETURN_NORMAL);
+
+	window_pane_set_mode(wp, &window_buffer_mode, &item->target, args);
 	return (CMD_RETURN_NORMAL);
 }

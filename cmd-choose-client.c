@@ -46,7 +46,9 @@ cmd_choose_client_exec(struct cmd *self, struct cmdq_item *item)
 	struct args		*args = self->args;
 	struct window_pane	*wp = item->target.wp;
 
-	if (server_client_how_many() != 0)
-		window_pane_set_mode(wp, &window_client_mode, args);
+	if (server_client_how_many() == 0)
+		return (CMD_RETURN_NORMAL);
+
+	window_pane_set_mode(wp, &window_client_mode, &item->target, args);
 	return (CMD_RETURN_NORMAL);
 }

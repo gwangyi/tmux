@@ -35,7 +35,7 @@ struct mode_tree_data {
 	u_int			  sort_size;
 	u_int			  sort_type;
 
-	void			 (*buildcb)(void *, u_int);
+	void			 (*buildcb)(void *, u_int, uint64_t *);
 	struct screen		*(*drawcb)(void *, void *, u_int, u_int);
 
 	struct mode_tree_list	  children;
@@ -245,9 +245,9 @@ mode_tree_each_tagged(struct mode_tree_data *mtd, void (*cb)(void *, void *,
 }
 
 struct mode_tree_data *
-mode_tree_start(struct window_pane *wp, void (*buildcb)(void *, u_int),
-    struct screen *(*drawcb)(void *, void *, u_int, u_int), void *modedata,
-    const char **sort_list, u_int sort_size, struct screen **s)
+mode_tree_start(struct window_pane *wp, void (*buildcb)(void *, u_int,
+    uint64_t *), struct screen *(*drawcb)(void *, void *, u_int, u_int),
+    void *modedata, const char **sort_list, u_int sort_size, struct screen **s)
 {
 	struct mode_tree_data	*mtd;
 
@@ -286,7 +286,7 @@ mode_tree_build(struct mode_tree_data *mtd)
 	TAILQ_CONCAT(&mtd->saved, &mtd->children, entry);
 	TAILQ_INIT(&mtd->children);
 
-	mtd->buildcb(mtd->modedata, mtd->sort_type);
+	mtd->buildcb(mtd->modedata, mtd->sort_type, &tag);
 
 	mode_tree_free_items(&mtd->saved);
 	TAILQ_INIT(&mtd->saved);
@@ -339,7 +339,8 @@ mode_tree_resize(struct mode_tree_data *mtd, u_int sx, u_int sy)
 
 struct mode_tree_item *
 mode_tree_add(struct mode_tree_data *mtd, struct mode_tree_item *parent,
-    void *itemdata, uint64_t tag, const char *name, const char *text)
+    void *itemdata, uint64_t tag, const char *name, const char *text,
+    int expanded)
 {
 	struct mode_tree_item	*mti, *saved;
 
@@ -359,10 +360,12 @@ mode_tree_add(struct mode_tree_data *mtd, struct mode_tree_item *parent,
 		if (parent == NULL || (parent != NULL && parent->expanded))
 			mti->tagged = saved->tagged;
 		mti->expanded = saved->expanded;
-	} else
+	} else if (expanded == -1)
 		mti->expanded = 1;
+	else
+		mti->expanded = expanded;
 
-	TAILQ_INIT (&mti->children);
+	TAILQ_INIT(&mti->children);
 
 	if (parent != NULL)
 		TAILQ_INSERT_TAIL(&parent->children, mti, entry);

@@ -25,7 +25,7 @@
 #include "tmux.h"
 
 static struct screen	*window_buffer_init(struct window_pane *,
-			     struct args *);
+			     struct cmd_find_state *, struct args *);
 static void		 window_buffer_free(struct window_pane *);
 static void		 window_buffer_resize(struct window_pane *, u_int,
 			     u_int);
@@ -122,7 +122,7 @@ window_buffer_cmp_size(const void *a0, const void *b0)
 }
 
 static void
-window_buffer_build(void *modedata, u_int sort_type)
+window_buffer_build(void *modedata, u_int sort_type, __unused uint64_t *tag)
 {
 	struct window_buffer_modedata	*data = modedata;
 	struct window_buffer_itemdata	*item;
@@ -169,7 +169,7 @@ window_buffer_build(void *modedata, u_int sort_type)
 
 		xasprintf(&text, "%zu bytes (%s)", item->size, tim);
 		mode_tree_add(data->data, NULL, item, item->order, item->name,
-		    text);
+		    text, -1);
 		free(text);
 	}
 
@@ -225,7 +225,8 @@ window_buffer_draw(__unused void *modedata, void *itemdata, u_int sx, u_int sy)
 }
 
 static struct screen *
-window_buffer_init(struct window_pane *wp, struct args *args)
+window_buffer_init(struct window_pane *wp, __unused struct cmd_find_state *fs,
+    struct args *args)
 {
 	struct window_buffer_modedata	*data;
 	struct screen			*s;

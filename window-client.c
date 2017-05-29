@@ -25,7 +25,7 @@
 #include "tmux.h"
 
 static struct screen	*window_client_init(struct window_pane *,
-			     struct args *);
+			     struct cmd_find_state *, struct args *);
 static void		 window_client_free(struct window_pane *);
 static void		 window_client_resize(struct window_pane *, u_int,
 			     u_int);
@@ -119,7 +119,7 @@ window_client_cmp_activity_time(const void *a0, const void *b0)
 }
 
 static void
-window_client_build(void *modedata, u_int sort_type)
+window_client_build(void *modedata, u_int sort_type, __unused uint64_t *tag)
 {
 	struct window_client_modedata	*data = modedata;
 	struct window_client_itemdata	*item;
@@ -168,7 +168,7 @@ window_client_build(void *modedata, u_int sort_type)
 
 		xasprintf(&text, "session %s (%s)", c->session->name, tim);
 		mode_tree_add(data->data, NULL, item, (uint64_t)c, c->name,
-		    text);
+		    text, -1);
 		free(text);
 	}
 }
@@ -207,7 +207,8 @@ window_client_draw(__unused void *modedata, void *itemdata, u_int sx, u_int sy)
 }
 
 static struct screen *
-window_client_init(struct window_pane *wp, struct args *args)
+window_client_init(struct window_pane *wp, __unused struct cmd_find_state *fs,
+    struct args *args)
 {
 	struct window_client_modedata	*data;
 	struct screen			*s;

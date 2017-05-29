@@ -42,6 +42,7 @@ extern char   **environ;
 
 struct args;
 struct client;
+struct cmd_find_state;
 struct cmdq_item;
 struct cmdq_list;
 struct environ;
@@ -697,7 +698,8 @@ struct screen_write_ctx {
 struct window_mode {
 	const char	*name;
 
-	struct screen	*(*init)(struct window_pane *, struct args *);
+	struct screen	*(*init)(struct window_pane *, struct cmd_find_state *,
+			     struct args *);
 	void		 (*free)(struct window_pane *);
 	void		 (*resize)(struct window_pane *, u_int, u_int);
 	void		 (*key)(struct window_pane *, struct client *,
@@ -2128,7 +2130,8 @@ void		 window_pane_unset_palette(struct window_pane *, u_int);
 void		 window_pane_reset_palette(struct window_pane *);
 int		 window_pane_get_palette(const struct window_pane *, int);
 int		 window_pane_set_mode(struct window_pane *,
-		     const struct window_mode *, struct args *);
+		     const struct window_mode *, struct cmd_find_state *,
+		     struct args *);
 void		 window_pane_reset_mode(struct window_pane *);
 void		 window_pane_key(struct window_pane *, struct client *,
 		     struct session *, key_code, struct mouse_event *);
@@ -2192,14 +2195,15 @@ void	 mode_tree_each_tagged(struct mode_tree_data *, void (*)(void *, void *,
 void	 mode_tree_up(struct mode_tree_data *, int);
 void	 mode_tree_down(struct mode_tree_data *, int);
 struct mode_tree_data *mode_tree_start(struct window_pane *,
-	     void (*)(void *, u_int), struct screen *(*)(void *, void *, u_int,
-	     u_int), void *, const char **, u_int , struct screen **);
+	     void (*)(void *, u_int, uint64_t *), struct screen *(*)(void *,
+	     void *, u_int, u_int), void *, const char **, u_int,
+	     struct screen **);
 void	 mode_tree_build(struct mode_tree_data *);
 void	 mode_tree_free(struct mode_tree_data *);
 void	 mode_tree_resize(struct mode_tree_data *, u_int, u_int);
 struct mode_tree_item *mode_tree_add(struct mode_tree_data *,
 	     struct mode_tree_item *, void *, uint64_t, const char *,
-	     const char *);
+	     const char *, int);
 void	 mode_tree_remove(struct mode_tree_data *, struct mode_tree_item *);
 void	 mode_tree_draw(struct mode_tree_data *);
 int	 mode_tree_key(struct mode_tree_data *, key_code *,

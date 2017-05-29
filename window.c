@@ -1187,7 +1187,7 @@ window_pane_mode_timer(__unused int fd, __unused short events, void *arg)
 
 int
 window_pane_set_mode(struct window_pane *wp, const struct window_mode *mode,
-    struct args *args)
+    struct cmd_find_state *fs, struct args *args)
 {
 	struct screen	*s;
 	struct timeval	 tv = { .tv_sec = 10 };
@@ -1200,7 +1200,7 @@ window_pane_set_mode(struct window_pane *wp, const struct window_mode *mode,
 	evtimer_set(&wp->modetimer, window_pane_mode_timer, wp);
 	evtimer_add(&wp->modetimer, &tv);
 
-	if ((s = wp->mode->init(wp, args)) != NULL)
+	if ((s = wp->mode->init(wp, fs, args)) != NULL)
 		wp->screen = s;
 	wp->flags |= (PANE_REDRAW|PANE_CHANGED);
 
