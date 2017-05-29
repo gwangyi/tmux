@@ -248,7 +248,8 @@ window_tree_build_window(struct session *s, struct winlink *wl, void* modedata,
 	    NULL, s, wl, NULL);
 	xasprintf(&name, "%u", wl->idx);
 
-	if (data->type == WINDOW_TREE_WINDOW)
+	if (data->type == WINDOW_TREE_SESSION ||
+	    data->type == WINDOW_TREE_WINDOW)
 		expanded = 0;
 	else
 		expanded = 1;
