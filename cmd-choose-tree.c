@@ -31,7 +31,7 @@ const struct cmd_entry cmd_choose_tree_entry = {
 	.alias = NULL,
 
 	.args = { "st:w", 0, 1 },
-	.usage = CMD_TARGET_PANE_USAGE,
+	.usage = "[-sw] " CMD_TARGET_PANE_USAGE,
 
 	.target = { 't', CMD_FIND_PANE, 0 },
 
