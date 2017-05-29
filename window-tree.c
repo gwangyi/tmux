@@ -34,6 +34,8 @@ static void		 window_tree_key(struct window_pane *,
 #define WINDOW_TREE_DEFAULT_COMMAND "switch-client -t '%%'"
 
 const struct window_mode window_tree_mode = {
+	.name = "tree-mode",
+
 	.init = window_tree_init,
 	.free = window_tree_free,
 	.resize = window_tree_resize,

@@ -36,6 +36,8 @@ static void		 window_client_key(struct window_pane *,
 #define WINDOW_CLIENT_DEFAULT_COMMAND "detach-client -t '%%'"
 
 const struct window_mode window_client_mode = {
+	.name = "client-mode",
+
 	.init = window_client_init,
 	.free = window_client_free,
 	.resize = window_client_resize,

@@ -36,6 +36,8 @@ static void		 window_buffer_key(struct window_pane *,
 #define WINDOW_BUFFER_DEFAULT_COMMAND "paste-buffer -b '%%'"
 
 const struct window_mode window_buffer_mode = {
+	.name = "buffer-mode",
+
 	.init = window_buffer_init,
 	.free = window_buffer_free,
 	.resize = window_buffer_resize,
