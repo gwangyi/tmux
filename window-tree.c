@@ -393,7 +393,7 @@ restart:
 		window_tree_build_session(l[i], modedata, sort_type, no_filter);
 	free(l);
 
-	if (data->item_size == 0) {
+	if (!no_filter && data->item_size == 0) {
 		no_filter = 1;
 		goto restart;
 	}
